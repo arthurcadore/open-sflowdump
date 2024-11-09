@@ -42,33 +42,49 @@ func popUint64(packet *[]byte) uint64 {
     return binary.BigEndian.Uint64(bytes)
 }
 
-func genericHeader(packet *[]byte) {
+type genericHeaderS struct {
+    datagramVersion uint32
+    ipVersion uint32
+    agentIP net.IP
+    subAgentID uint32
+    sequenceNumber uint32
+    sysUptime uint32
+    numSamples uint32
+}
+
+func genericHeader(packet *[]byte) genericHeaderS {
+
+    // Cria uma instância da estrutura genericHeader
+    var header genericHeaderS
 
     // Extrair os campos do cabeçalho de acordo com a estrutura fornecida
-    datagramVersion := popUint32(packet)
-    ipVersion := popUint32(packet)
+    header.datagramVersion = popUint32(packet)
+    header.ipVersion = popUint32(packet)
 
     // Obter o agente IP como um uint32 e converter para net.IP
     agentIPBytes := make([]byte, 4) // Criar um slice de 4 bytes
     binary.BigEndian.PutUint32(agentIPBytes, popUint32(packet)) // Colocar o uint32 no slice de bytes
-    agentIP := net.IP(agentIPBytes)
+    header.agentIP = net.IP(agentIPBytes)
 
-    subAgentID := popUint32(packet)
-    sequenceNumber := popUint32(packet)
-    sysUptime := popUint32(packet)
-    numSamples := popUint32(packet)
+    header.subAgentID = popUint32(packet)
+    header.sequenceNumber = popUint32(packet)
+    header.sysUptime = popUint32(packet)
+    header.numSamples = popUint32(packet)
 
     if enableLogging {
 	    // Imprimir todos os valores dos campos
 	    fmt.Printf("################################\n")
-	    fmt.Printf("Versão do Datagram: %d\n", datagramVersion)
-	    fmt.Printf("Versão do IP: %d\n", ipVersion)
-	    fmt.Printf("Endereço IP do Agente: %s\n", agentIP)
-	    fmt.Printf("ID do Sub-Agente: %d\n", subAgentID)
-	    fmt.Printf("Número de Sequência: %d\n", sequenceNumber)
-	    fmt.Printf("SysUptime (secs): %d\n", sysUptime/1000)
-	    fmt.Printf("Número de Amostras: %d\n", numSamples)
+	    fmt.Printf("Versão do Datagram: %d\n", header.datagramVersion)
+	    fmt.Printf("Versão do IP: %d\n", header.ipVersion)
+	    fmt.Printf("Endereço IP do Agente: %s\n", header.agentIP)
+	    fmt.Printf("ID do Sub-Agente: %d\n", header.subAgentID)
+	    fmt.Printf("Número de Sequência: %d\n", header.sequenceNumber)
+	    fmt.Printf("SysUptime (secs): %d\n", header.sysUptime/1000)
+	    fmt.Printf("Número de Amostras: %d\n", header.numSamples)
     } 
+
+    // Retorna a estrutura genericHeader
+    return header
 } 
 
 // Função para verificar o tipo de flow, e retonar um inteiro correspondente ao tipo de flow
